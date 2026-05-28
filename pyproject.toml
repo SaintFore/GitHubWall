@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "githubwall"
+version = "0.1.0"
+description = "Auto-fill GitHub contribution heatmap with custom patterns"
+requires-python = ">=3.8"
+dependencies = [
+    "click>=8.0",
+    "fastapi[standard]>=0.100.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+image = [
+    "Pillow>=10.0",
+]
+
+[project.scripts]
+githubwall = "src.cli:cli"
