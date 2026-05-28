@@ -71,3 +71,26 @@ def generate_random(width: int = 52, density: float = 0.5) -> Pattern:
             row.append(level)
         data.append(row)
     return Pattern(name="random", data=data)
+
+
+def generate_fill_all(width: int = 52, level: int = 2, vary: bool = False) -> Pattern:
+    """Generate a pattern that fills every day.
+
+    Args:
+        width: Number of columns (default 52).
+        level: Fixed level (1-4) for all cells when vary=False.
+        vary: If True, randomly vary levels between 1-4 for a natural look.
+
+    Returns:
+        A Pattern with all cells filled.
+    """
+    data = []
+    for _ in range(7):
+        row = []
+        for _ in range(width):
+            if vary:
+                row.append(random.choices([1, 2, 3, 4], weights=[2, 3, 3, 2])[0])
+            else:
+                row.append(level)
+        data.append(row)
+    return Pattern(name="fill_all", data=data)

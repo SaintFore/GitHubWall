@@ -41,6 +41,15 @@ uv run githubwall create --repo ./my-wall --pattern heart --year 2024
 # 使用随机图案，填充 2024 年
 uv run githubwall create --repo ./my-wall --random --density 0.5 --year 2024
 
+# 涂满模式：每天都有 commit，热力图全绿
+uv run githubwall create --repo ./my-wall --fill --year 2024
+
+# 涂满模式：随机深浅，看起来更自然
+uv run githubwall create --repo ./my-wall --fill --vary --year 2024
+
+# 涂满模式：指定固定级别（1-4）
+uv run githubwall create --repo ./my-wall --fill --level 3 --year 2024
+
 # 使用自定义日期范围
 uv run githubwall create --repo ./my-wall --pattern diamond --start 2024-01-01 --end 2024-06-30
 
@@ -74,6 +83,49 @@ uv run githubwall push --repo ./my-wall --remote origin
 
 打开你的 GitHub 个人主页，等待几分钟后即可看到热力图变化。
 
+## 自动保持热力图活跃（GitHub Actions）
+
+如果你想让热力图每天自动更新，可以使用 GitHub Actions：
+
+### 第一步：生成 workflow 文件
+
+```bash
+uv run githubwall workflow --repo ./my-wall
+```
+
+这会在 `./my-wall/.github/workflows/` 下生成 `daily-commit.yml`。
+
+### 第二步：创建 Personal Access Token
+
+1. 打开 GitHub -> Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens
+2. 点击 "Generate new token"
+3. Token name: 随意填写（如 `githubwall-daily`）
+4. Repository access: 选择 "Only select repositories"，选择你创建的目标仓库
+5. Permissions -> Repository permissions -> Contents: 选择 "Read and write"
+6. 点击 "Generate token"，复制生成的 token
+
+### 第三步：添加 Secret
+
+1. 打开你的目标仓库页面
+2. 点击 Settings -> Secrets and variables -> Actions
+3. 点击 "New repository secret"
+4. Name: `PAT`
+5. Secret: 粘贴上一步生成的 token
+6. 点击 "Add secret"
+
+### 第四步：推送并启用
+
+```bash
+cd my-wall
+git add .
+git commit -m "chore: add daily commit workflow"
+git push -u origin main
+```
+
+然后在仓库页面的 Actions 标签页中，点击 "I understand my workflows, go ahead and enable them"。
+
+workflow 会在每天北京时间 20:00 自动运行，你也可以在 Actions 页面手动触发。
+
 ## CLI 命令参考
 
 ### `create` - 生成 commit
@@ -84,6 +136,9 @@ uv run githubwall push --repo ./my-wall --remote origin
 | `--pattern` | 预设图案名或 JSON 文件路径 | heart |
 | `--random` | 使用随机图案 | false |
 | `--density` | 随机密度 (0.0-1.0) | 0.5 |
+| `--fill` | 涂满模式（每天都有 commit） | false |
+| `--level` | 涂满模式的固定级别 (1-4) | 2 |
+| `--vary` | 涂满模式随机变化级别 | false |
 | `--year` | 目标年份 | 当前年 |
 | `--start` | 开始日期 (YYYY-MM-DD) | - |
 | `--end` | 结束日期 (YYYY-MM-DD) | - |
@@ -101,6 +156,12 @@ uv run githubwall push --repo ./my-wall --remote origin
 |------|------|--------|
 | `--host` | 监听地址 | 0.0.0.0 |
 | `--port` | 监听端口 | 8000 |
+
+### `workflow` - 生成 GitHub Actions workflow
+
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `--repo` | 目标仓库路径 | 当前目录 |
 
 ## 图案格式
 

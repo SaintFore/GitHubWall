@@ -1,7 +1,9 @@
 import click
+import shutil
 from datetime import date
+from pathlib import Path
 
-from src.core.pattern import Pattern, load_pattern, generate_random
+from src.core.pattern import Pattern, load_pattern, generate_random, generate_fill_all
 from src.core.scheduler import Scheduler
 from src.core.git_engine import GitEngine
 
@@ -17,10 +19,13 @@ def cli():
 @click.option('--pattern', 'pattern_name', help='Pattern name or file path')
 @click.option('--random', 'use_random', is_flag=True, help='Use random pattern')
 @click.option('--density', default=0.5, help='Random density (0.0-1.0)')
+@click.option('--fill', 'fill_all', is_flag=True, help='Fill every day with commits')
+@click.option('--level', default=2, type=click.IntRange(1, 4), help='Fixed level for --fill (1-4)')
+@click.option('--vary', is_flag=True, help='Vary levels randomly for --fill (natural look)')
 @click.option('--year', type=int, help='Target year')
 @click.option('--start', 'start_date', help='Start date (YYYY-MM-DD)')
 @click.option('--end', 'end_date', help='End date (YYYY-MM-DD)')
-def create(repo, pattern_name, use_random, density, year, start_date, end_date):
+def create(repo, pattern_name, use_random, density, fill_all, level, vary, year, start_date, end_date):
     """Create commits to fill heatmap."""
     # Determine date range
     if start_date and end_date:
@@ -34,7 +39,9 @@ def create(repo, pattern_name, use_random, density, year, start_date, end_date):
         end = date(date.today().year, 12, 31)
 
     # Determine pattern
-    if use_random:
+    if fill_all:
+        pattern = generate_fill_all(width=52, level=level, vary=vary)
+    elif use_random:
         pattern = generate_random(width=52, density=density)
     elif pattern_name:
         if pattern_name.endswith('.json'):
@@ -78,6 +85,31 @@ def web(host, port):
     from src.web.app import run_web
     click.echo(f"Starting web interface at http://{host}:{port}")
     run_web(host, port)
+
+
+@cli.command()
+@click.option('--repo', default='.', help='Target repository path')
+def workflow(repo):
+    """Generate GitHub Actions workflow for daily commits."""
+    repo_path = Path(repo)
+    workflow_dir = repo_path / '.github' / 'workflows'
+    workflow_dir.mkdir(parents=True, exist_ok=True)
+
+    # Find the template workflow
+    template_path = Path(__file__).parent.parent / '.github' / 'workflows' / 'daily-commit.yml'
+    if not template_path.exists():
+        click.echo("Error: Workflow template not found")
+        return
+
+    target_path = workflow_dir / 'daily-commit.yml'
+    shutil.copy2(template_path, target_path)
+    click.echo(f"Workflow generated at {target_path}")
+    click.echo("")
+    click.echo("Next steps:")
+    click.echo("1. Go to your GitHub repo -> Settings -> Secrets -> Actions")
+    click.echo("2. Add a new secret named 'PAT' with your Personal Access Token")
+    click.echo("3. Token needs 'Contents: Read and write' permission")
+    click.echo("4. The workflow will run daily at 20:00 Beijing time")
 
 
 if __name__ == '__main__':
