@@ -2,7 +2,7 @@ import pytest
 import subprocess
 import tempfile
 import os
-from datetime import date
+from datetime import date, timedelta
 from unittest.mock import patch, MagicMock
 from src.core.git_engine import GitEngine
 
@@ -60,3 +60,26 @@ def test_git_engine_create_empty_commit():
             text=True
         )
         assert '2024-06-15' in result.stdout
+
+
+def test_git_engine_large_batch_disables_auto_maintenance():
+    """Batch creation must not let git auto-maintenance race the commit loop."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        engine = GitEngine(tmpdir)
+        engine.init_repo()
+        subprocess.run(['git', 'config', 'gc.auto', '1'], cwd=tmpdir, check=True)
+
+        dates = [date(2024, 1, 1) + timedelta(days=i % 365) for i in range(300)]
+        engine.create_commits_batch(dates)
+
+        pack_dir = os.path.join(tmpdir, '.git', 'objects', 'pack')
+        pack_files = [name for name in os.listdir(pack_dir) if name.startswith('pack-')]
+        assert pack_files == []
+
+        result = subprocess.run(
+            ['git', 'fsck', '--full', '--no-reflogs'],
+            cwd=tmpdir,
+            capture_output=True,
+            text=True
+        )
+        assert result.returncode == 0, result.stdout + result.stderr

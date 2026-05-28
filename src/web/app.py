@@ -77,9 +77,7 @@ async def execute(request: ExecuteRequest):
 
         engine = GitEngine(request.repo)
         engine.init_repo()
-
-        for commit_date in schedule:
-            engine.create_commit(commit_date)
+        engine.create_commits_batch(schedule)
 
         return {"success": True, "commits": len(schedule), "repo": request.repo}
     except Exception as e:

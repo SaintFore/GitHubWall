@@ -60,10 +60,7 @@ def create(repo, pattern_name, use_random, density, fill_all, level, vary, year,
     engine.init_repo()
 
     click.echo(f"Creating {len(schedule)} commits...")
-    with click.progressbar(schedule) as bar:
-        for commit_date in bar:
-            engine.create_commit(commit_date)
-
+    engine.create_commits_batch(schedule)
     click.echo(f"Done! Repository created at {repo}")
 
 
