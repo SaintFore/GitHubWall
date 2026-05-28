@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHubWall - 热力图编辑器</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>GitHubWall 热力图编辑器</h1>
+
+        <div class="toolbar">
+            <div class="tool-group">
+                <label>画笔级别:</label>
+                <button class="level-btn active" data-level="0">0</button>
+                <button class="level-btn" data-level="1">1</button>
+                <button class="level-btn" data-level="2">2</button>
+                <button class="level-btn" data-level="3">3</button>
+                <button class="level-btn" data-level="4">4</button>
+            </div>
+            <div class="tool-group">
+                <button id="clear-btn">清空</button>
+                <button id="random-btn">随机填充</button>
+                <select id="preset-select">
+                    <option value="">选择预设图案</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid-container">
+            <div class="day-labels">
+                <span>日</span>
+                <span>一</span>
+                <span>二</span>
+                <span>三</span>
+                <span>四</span>
+                <span>五</span>
+                <span>六</span>
+            </div>
+            <div id="heatmap-grid" class="grid"></div>
+        </div>
+
+        <div class="config">
+            <h3>配置</h3>
+            <div class="form-group">
+                <label>仓库路径:</label>
+                <input type="text" id="repo-path" value="./my-wall">
+            </div>
+            <div class="form-group">
+                <label>开始日期:</label>
+                <input type="date" id="start-date">
+            </div>
+            <div class="form-group">
+                <label>结束日期:</label>
+                <input type="date" id="end-date">
+            </div>
+            <button id="execute-btn">执行</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script src="/static/js/editor.js"></script>
+</body>
+</html>
