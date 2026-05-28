@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 from typing import List
 
@@ -31,3 +32,18 @@ class Pattern:
                         f"Invalid level {value} at ({row_idx}, {col_idx}). Must be 0-4"
                     )
         return True
+
+
+def load_pattern(file_path: str) -> Pattern:
+    """Load a Pattern from a JSON file.
+
+    The JSON file must contain at minimum a 'name' (str) and 'data' (list of
+    list of int) field. Optional 'width' and 'height' keys are accepted but
+    ignored -- they are derived from the data itself.
+
+    Raises FileNotFoundError when the path does not exist, and
+    json.JSONDecodeError when the file is not valid JSON.
+    """
+    with open(file_path, "r") as f:
+        data = json.load(f)
+    return Pattern(name=data["name"], data=data["data"])

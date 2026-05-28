@@ -1,4 +1,7 @@
 import pytest
+import tempfile
+import json
+import os
 from src.core.pattern import Pattern
 
 
@@ -45,3 +48,50 @@ def test_pattern_validate_inconsistent_row_width():
     data = [[0, 1, 2], [0, 1]] * 3 + [[0, 1, 2]]
     with pytest.raises(ValueError, match="inconsistent width"):
         Pattern(name="test", data=data)
+
+
+def test_load_pattern_from_json():
+    """Test loading a pattern from a JSON file"""
+    from src.core.pattern import load_pattern
+
+    pattern_data = {
+        "name": "heart",
+        "width": 7,
+        "height": 7,
+        "data": [[0, 0, 1, 1, 0, 0, 0]] * 7,
+    }
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(pattern_data, f)
+        temp_path = f.name
+
+    try:
+        pattern = load_pattern(temp_path)
+        assert pattern.name == "heart"
+        assert pattern.width == 7
+        assert pattern.height == 7
+    finally:
+        os.unlink(temp_path)
+
+
+def test_load_pattern_file_not_found():
+    """Test loading a nonexistent file raises FileNotFoundError"""
+    from src.core.pattern import load_pattern
+
+    with pytest.raises(FileNotFoundError):
+        load_pattern("/nonexistent/path.json")
+
+
+def test_load_pattern_invalid_json():
+    """Test loading invalid JSON raises JSONDecodeError"""
+    from src.core.pattern import load_pattern
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        f.write("invalid json content")
+        temp_path = f.name
+
+    try:
+        with pytest.raises(json.JSONDecodeError):
+            load_pattern(temp_path)
+    finally:
+        os.unlink(temp_path)
