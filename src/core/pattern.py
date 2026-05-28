@@ -1,4 +1,5 @@
 import json
+import random
 from dataclasses import dataclass
 from typing import List
 
@@ -47,3 +48,26 @@ def load_pattern(file_path: str) -> Pattern:
     with open(file_path, "r") as f:
         data = json.load(f)
     return Pattern(name=data["name"], data=data["data"])
+
+
+def generate_random(width: int = 52, density: float = 0.5) -> Pattern:
+    """Generate a random pattern with configurable width and density.
+
+    Args:
+        width: Number of columns (default 52, one per week of the year).
+        density: Probability (0.0-1.0) that any given cell is non-zero.
+
+    Returns:
+        A Pattern with name "random" and 7 rows of random levels.
+    """
+    data = []
+    for _ in range(7):
+        row = []
+        for _ in range(width):
+            if random.random() < density:
+                level = random.choices([1, 2, 3, 4], weights=[4, 3, 2, 1])[0]
+            else:
+                level = 0
+            row.append(level)
+        data.append(row)
+    return Pattern(name="random", data=data)

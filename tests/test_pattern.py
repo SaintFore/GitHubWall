@@ -95,3 +95,31 @@ def test_load_pattern_invalid_json():
             load_pattern(temp_path)
     finally:
         os.unlink(temp_path)
+
+
+def test_generate_random_pattern():
+    """测试随机图案生成"""
+    from src.core.pattern import generate_random
+    pattern = generate_random(width=52, density=0.5)
+    assert pattern.name == "random"
+    assert pattern.width == 52
+    assert pattern.height == 7
+    assert all(0 <= v <= 4 for row in pattern.data for v in row)
+
+
+def test_generate_random_density_low():
+    """测试低密度随机图案"""
+    from src.core.pattern import generate_random
+    pattern = generate_random(width=10, density=0.1)
+    zero_count = sum(1 for row in pattern.data for v in row if v == 0)
+    total = 10 * 7
+    assert zero_count / total > 0.5  # 大部分应该是 0
+
+
+def test_generate_random_density_high():
+    """测试高密度随机图案"""
+    from src.core.pattern import generate_random
+    pattern = generate_random(width=10, density=0.9)
+    non_zero_count = sum(1 for row in pattern.data for v in row if v > 0)
+    total = 10 * 7
+    assert non_zero_count / total > 0.5  # 大部分应该非 0
