@@ -70,5 +70,15 @@ def push(repo, remote):
     click.echo("Pushed successfully!")
 
 
+@cli.command()
+@click.option('--host', default='0.0.0.0', help='Host to bind')
+@click.option('--port', default=8000, type=int, help='Port to bind')
+def web(host, port):
+    """Start web interface"""
+    from src.web.app import run_web
+    click.echo(f"Starting web interface at http://{host}:{port}")
+    run_web(host, port)
+
+
 if __name__ == '__main__':
     cli()
